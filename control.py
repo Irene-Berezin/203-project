@@ -19,8 +19,11 @@ class Grid:
     data: np.ndarray 
     generations: int 
 
-    def __init__(self, size, setup):
-        # YOUR CODE HERE
+    def __init__(self, size, setup): 
+        self.size = size
+        self.setup = glidestart(size)
+        self.gridSize = tuple[int, int]
+        self.data = np.ndarray
         # Remember to set object attributes self.gridSize and self.data.
         self.generations = 0
 
@@ -35,11 +38,10 @@ class Grid:
 # param: size
 # returns: an np array of size size, whose values are uniformly selected from range(states)
 def randStart(size):
-    # YOUR CODE HERE
+    return RNG.integers(0, NUM_STATES, size=size)
     # To get your random numbers, you must use the generator from numpy.random which 
     # is stored in the global variable RNG defined above.
     # See https://numpy.org/doc/stable/reference/random/index.html#random-quick-start    
-    pass
 
 # function: glideStart
 # Purpose: employed by grid __init__ (constructor) to give initial value to data
@@ -48,8 +50,13 @@ def randStart(size):
 # (2,0), (0,1), (2,1), (1,2), and (2,2), whose values are 1. Intended to be used
 # on a game w 2 states.
 def glideStart(size):
-    # YOUR CODE HERE
-    pass
+    arr = np.zeros(size)
+    arr[2][0] = 1
+    arr[0][1] = 1
+    arr[2][1] = 1
+    arr[1][2] = 1
+    arr[2][2] = 1
+    return arr
 
 # --------------------------------------------------------------------
 # Rule functions -- used by the evolve function. Only one is used
@@ -64,8 +71,15 @@ def glideStart(size):
 #           See https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 # Note: assumes a two-state game, where 0 is "dead" and 1 is "alive"
 def ruleGOL(cell, tallies):
-    # YOUR CODE HERE
-    pass
+    if cell == 1:
+        if tallies[1] < 2 or tallies[1] > 3:
+            cell = 0
+        elif tallies[1] ==2 or tallies[1] ==3:
+            cell = 1
+    if cell == 0:
+        if tallies[1] == 3:
+            cell = 1
+        else: cell = 0 
 
 # function: ruleCycle
 # purpose: applies a set of rules given a current state and a set of tallies over neighbor states
@@ -84,7 +98,7 @@ def ruleCycle(cell, tallies):
 # --------------------------------------------------------------------
 # returns a list of neighbors in a square around x,y
 def neighborSquare(x, y):
-    # YOUR CODE HERE
+    
     pass
 
 # returns a list of neighbors in a diamond around x,y (NWSE positions)
