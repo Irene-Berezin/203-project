@@ -20,11 +20,9 @@ class Grid:
     generations: int 
 
     def __init__(self, size, setup): 
-        self.size = size
-        self.setup = glidestart(size)
-        self.gridSize = tuple[int, int]
-        self.data = np.ndarray
-        # Remember to set object attributes self.gridSize and self.data.
+        self.size = size  
+        self.data = setup(size) 
+        self.gridSize = size
         self.generations = 0
 
 
@@ -74,12 +72,17 @@ def ruleGOL(cell, tallies):
     if cell == 1:
         if tallies[1] < 2 or tallies[1] > 3:
             cell = 0
+            return cell
         elif tallies[1] ==2 or tallies[1] ==3:
             cell = 1
+            return cell
     if cell == 0:
         if tallies[1] == 3:
             cell = 1
-        else: cell = 0 
+            return cell
+        else: 
+            cell = 0 
+            return cell
 
 # function: ruleCycle
 # purpose: applies a set of rules given a current state and a set of tallies over neighbor states
@@ -88,9 +91,10 @@ def ruleGOL(cell, tallies):
 # returns: if k is the current state, returns k+1 if there is a neighbor of state k+1, else returns k
 #          See https://en.wikipedia.org/wiki/Cyclic_cellular_automaton
 def ruleCycle(cell, tallies):
-    # YOUR CODE HERE
-    pass
-
+    if tallies[cell +1] > 0:
+        cell = cell + 1
+        return cell
+    else: return cell
 
 # --------------------------------------------------------------------
 # Neighbor functions -- used by the evolve function. Only one is used
@@ -98,12 +102,12 @@ def ruleCycle(cell, tallies):
 # --------------------------------------------------------------------
 # returns a list of neighbors in a square around x,y
 def neighborSquare(x, y):
-    
+    return [(x-1, y-1),(x,y-1),(x+1,y-1),(x+1, y),(x+1, y+1),(x,y+1),(x-1, y+1),(x-1,y)]
     pass
 
 # returns a list of neighbors in a diamond around x,y (NWSE positions)
 def neighborDiamond(x, y):
-    # YOUR CODE HERE
+    return [(x,y-1),(x,y+1),(x-1,y),(x+1,y)]
     pass
 
 
@@ -116,8 +120,12 @@ def neighborDiamond(x, y):
 # Note: neighborSet may not necessarily return *valid* neighbors. It's tally_neighbor's job to check
 # for validity.
 def tally_neighbors(grid, position, neighborSet):
-    # YOUR CODE HERE
-    pass
+    tallies = [0] * NUM_STATES
+    for i, j in neighborSet(*position):
+        if j < grid.shape[0] and i < grid.shape[1]:
+            state = grid[j][i]
+            tallies[state] += 1
+    return tallies
 
 
 # student: putting it all together.
@@ -130,8 +138,12 @@ def tally_neighbors(grid, position, neighborSet):
 # The grid's generations variable should be incremented every time the function is called. (This variable
 # may only be useful for debugging--there is a lot we *could* do with it, but our application doesn't use it.)
 def evolve(g, apply_rule, neighbors) -> None:
-    # YOUR CODE HERE
-    pass
+    for i in list(range(g.data.shape[0])):
+        for j in list(range(g.data.shape[1])):
+            tallies = tally_neighbors(g.data, (i,j), neighbors)
+            g.data[j][i] = apply_rule(g.data[j][i], tallies)
+    g.generations += 1
+    return g
 
 
 # Here we define some global (to the module) variables which will determine what CA to run.
