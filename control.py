@@ -48,7 +48,7 @@ def randStart(size):
 # (2,0), (0,1), (2,1), (1,2), and (2,2), whose values are 1. Intended to be used
 # on a game w 2 states.
 def glideStart(size):
-    arr = np.zeros(size)
+    arr = np.zeros(size, dtype=int)
     arr[2][0] = 1
     arr[0][1] = 1
     arr[2][1] = 1
@@ -91,10 +91,11 @@ def ruleGOL(cell, tallies):
 # returns: if k is the current state, returns k+1 if there is a neighbor of state k+1, else returns k
 #          See https://en.wikipedia.org/wiki/Cyclic_cellular_automaton
 def ruleCycle(cell, tallies):
-    if tallies[cell +1] > 0:
-        cell = cell + 1
+    next_state = (cell + 1) % NUM_STATES
+    if tallies[next_state] > 0:
+        return next_state
+    else:
         return cell
-    else: return cell
 
 # --------------------------------------------------------------------
 # Neighbor functions -- used by the evolve function. Only one is used
@@ -121,8 +122,10 @@ def neighborDiamond(x, y):
 # for validity.
 def tally_neighbors(grid, position, neighborSet):
     tallies = [0] * NUM_STATES
+    rows = grid.shape[0]
+    cols = grid.shape[1]
     for i, j in neighborSet(*position):
-        if j < grid.shape[0] and i < grid.shape[1]:
+        if 0 <= i < cols and 0 <= j < rows:  # only count if within grid bounds
             state = grid[j][i]
             tallies[state] += 1
     return tallies
@@ -138,20 +141,24 @@ def tally_neighbors(grid, position, neighborSet):
 # The grid's generations variable should be incremented every time the function is called. (This variable
 # may only be useful for debugging--there is a lot we *could* do with it, but our application doesn't use it.)
 def evolve(g, apply_rule, neighbors) -> None:
-    for i in list(range(g.data.shape[0])):
-        for j in list(range(g.data.shape[1])):
-            tallies = tally_neighbors(g.data, (i,j), neighbors)
-            g.data[j][i] = apply_rule(g.data[j][i], tallies)
+    old_data = np.copy(g.data) 
+    new_data = np.copy(old_data)
+    for y in range(old_data.shape[0]):
+        for x in range(old_data.shape[1]):
+            tallies = tally_neighbors(old_data, (x, y), neighbors)
+            new_data[y][x] = apply_rule(old_data[y][x], tallies)
     g.generations += 1
+    g.data = new_data 
     return g
 
 
 # Here we define some global (to the module) variables which will determine what CA to run.
 # You will want to change these values to test out other choices for the CA elements / parameters.
-NUM_STATES = 2
-WHICH_GRID = Grid((50,50), randStart)
-WHICH_RULE = ruleGOL
+NUM_STATES = 10
+WHICH_GRID = Grid((200,200), randStart)
+WHICH_RULE = ruleCycle
 WHICH_NEIGHBOR = neighborSquare
+
 
 # Should we save a gif of the animation?
 # (Set the parameters (including filename) of the animation in display.py)
